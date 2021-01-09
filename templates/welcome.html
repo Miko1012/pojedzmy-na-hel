@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}
+Start
+{% endblock %}
+{% block head_stuff %}
+
+{% endblock %}
+{% block content %}
+    <div>elo mordo</div>
+    <a href={{ url_for('register') }}>
+        <button>
+            Zarejestruj się może co
+        </button>
+    </a>
+    <a href={{ url_for('login') }}>
+        <button>
+            albo zaloguj się chociaż
+        </button>
+    </a>
+{% endblock %}
