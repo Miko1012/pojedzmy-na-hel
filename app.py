@@ -55,15 +55,22 @@ def register():
         return render_template('registration.html')
 
     if request.method == 'POST':
-        login = request.form.get('login')
-        password = request.form.get('password')
-        query_db('INSERT INTO users (login, password) VALUES (?,?)',
-                 (
-                     login,
-                     password
-                 ))
+        login = request.form['login']
+        password = request.form['password']
 
-        return "post"
+        try:
+            with sqlite3.connect("database.db") as con:
+                cur = con.cursor()
+                cur.execute("INSERT INTO users (login, password) VALUES (?,?)", (login, password))
+                con.commit()
+        except:
+            con.rollback()
+            flash("Wystąpił błąd z połączeniem z bazą danych.")
+            return redirect(url_for(register))
+        finally:
+            con.close()
+
+        return redirect(url_for(login))
 
     else:
         flash("Wystąpił bład - niewłaściwy typ żądania")
@@ -73,10 +80,31 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return json.dumps(query_db('SELECT * FROM users'))
+        return render_template('login.html')
 
     if request.method == 'POST':
-        return "login post"
+        # login = request.form['login']
+        # password = request.form['password']
+
+        # con = sqlite3.connect("database.db")
+        # con.row_factory = sqlite3.Row
+        #
+        # cur = con.cursor()
+        # cur.execute("SELECT * FROM users WHERE users.login = (?)", request.form['login'])
+        #
+        # rows = cur.fetchall()
+
+        # rows = query_db("select * from users where users.login = (?)", login)
+        # print(rows)
+
+        # print(rows)
+        g.db = sqlite3.connect('database.db')
+        cur = g.db.execute('select * from users where login = ?', [request.form['login']])
+        user = cur.fetchone()
+        # user = dict(login=row[0], password=row[1]) for row in cur.fetchall()
+        print(user[0])
+
+        return json.dumps(user)
 
     else:
         flash("Wystąpił bład - niewłaściwy typ żądania")
