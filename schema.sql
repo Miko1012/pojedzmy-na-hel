@@ -1,4 +1,10 @@
 CREATE TABLE IF NOT EXISTS users (
     login TEXT PRIMARY KEY,
     password TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user TEXT NOT NULL,
+    site TEXT NOT NULL,
+    FOREIGN KEY(user) REFERENCES users(login)
 )

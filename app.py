@@ -119,7 +119,36 @@ def login():
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     print(session)
+
     return render_template('dashboard.html')
+
+
+@app.route('/dashboard/site', methods=['POST'])
+def dashboard_site():
+    if request.method == 'POST':
+        g.db = sqlite3.connect('database.db')
+        cur = g.db.execute('select * from sites where site = ? AND user = ?', [request.form['site'], session['user']])
+        site = cur.fetchone()
+        print(session['user'])
+        print(site)
+        if site is None:
+            try:
+                print('dodaje witryne')
+                with sqlite3.connect("database.db") as con:
+                    cur = con.cursor()
+                    cur.execute("INSERT INTO sites (user, site) VALUES (?,?)", [session['user'], request.form['site']])
+                    con.commit()
+                    flash('Dodano witrynę!')
+            except:
+                print('cos poszlo nie tak')
+                con.rollback()
+                flash("Wystąpił błąd z połączeniem z bazą danych.")
+                return redirect(url_for('dashboard'))
+            finally:
+                con.close()
+        else:
+            flash('Posiadasz już zapisane hasło do tej witryny!')
+        return redirect(url_for('dashboard'))
 
 
 @app.route('/logout')

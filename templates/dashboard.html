@@ -6,5 +6,12 @@ Pulpit
 
 {% endblock %}
 {% block content %}
-dashboard
+Twoje dane logowań do witryn:
+    <form method="post" action={{ url_for('dashboard_site') }}>
+        <label for="site">Witryna</label>
+        <input type="text" id="site" name="site">
+        <label for="password">Hasło</label>
+        <input type="password" name="password" id="password">
+        <input type="submit" value="Dodaj witrynę">
+    </form>
 {% endblock %}

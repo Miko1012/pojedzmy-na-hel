@@ -9,6 +9,7 @@
     <a href={{ url_for('welcome') }}>Start</a>
     {% if session['user'] %}
         Witaj {{ session['user'] }}!
+        <a href={{ url_for('dashboard') }}>Kokpit</a>
         <a href={{ url_for('logout') }}>Wyloguj się</a>
     {% else %}
         <a href={{ url_for('register') }}>Zarejestruj się</a>
