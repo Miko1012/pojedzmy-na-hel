@@ -3,10 +3,46 @@
 Pulpit
 {% endblock %}
 {% block head_stuff %}
-
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 {% endblock %}
 {% block content %}
 Twoje dane logowań do witryn:
+    <table>
+        <tr>
+            <th>Witryna</th>
+            <th>Hasło</th>
+            {% if session['masterPassword'] %}
+                <th>Akcje</th>
+            {% endif %}
+        </tr>
+        {% for site in sites %}
+        <tr>
+            <td>{{ site.site }}</td>
+            <td>{{ site.password }}</td>
+            <td>
+                {% if session['masterPassword'] %}
+                    {% set link = url_for('dashboard_site_reveal', site_id=site.id) %}
+                    {{ link }}
+                    <a id="decrypt-{{ site.id }}" title="Odkryj hasło do serwisu"
+                    href="#" onclick="revealPassword('{{ link }}');return false;">Odszyfruj</a>
+                {% endif %}
+{#                <a href="">Skopiuj</a>#}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if session['masterPassword'] %}
+        Twoje hasło odszyfrowujące jest ustawione.
+        <form action="{{ url_for('dashboard_master_password_flush') }}" method="post">
+            <input type="submit" value="Wyczyść hasło odszyfrowujące">
+        </form>
+    {% else %}
+        <form action="{{ url_for('dashboard_master_password_set') }}" method="post">
+            <label for="masterPassword">Ustaw swoje hasło deszyfrujące, żeby móc odszyfrować hasła:</label>
+            <input type="password" id="masterPassword" name="masterPassword">
+            <input type="submit" value="Ustaw">
+        </form>
+    {% endif %}
     <form method="post" action={{ url_for('dashboard_site') }}>
         <label for="site">Witryna</label>
         <input type="text" id="site" name="site">

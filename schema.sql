@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS sites (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user TEXT NOT NULL,
     site TEXT NOT NULL,
+    password TEXT NOT NULL,
     FOREIGN KEY(user) REFERENCES users(login)
 )

@@ -1,12 +1,15 @@
 import json
 import redis
+import base64
 import sqlite3
 import werkzeug
-from flask import Flask, g, render_template, request, flash, make_response, url_for, session
+from flask import Flask, g, render_template, request, flash, make_response, url_for, session, jsonify
 from flask_redis import FlaskRedis
 from flask_session import Session
 from os import getenv
-
+from Crypto import Random
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
 
 app = Flask(__name__)
 
@@ -18,6 +21,34 @@ app.config['SESSION_TYPE'] = 'filesystem'
 # app.config['SESSION_REDIS'] = redis_client
 Session(app)
 DATABASE = 'database.db'
+
+# https://www.quickprogrammingtips.com/python/aes-256-encryption-and-decryption-in-python.html
+BLOCK_SIZE = 16
+pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
+unpad = lambda s: s[:-ord(s[len(s) - 1:])]
+
+
+def get_private_key(password):
+    salt = b"this is a salt"
+    kdf = PBKDF2(password, salt, 64, 1000)
+    key = kdf[:32]
+    return key
+
+
+def encrypt(raw, password):
+    private_key = get_private_key(password)
+    raw = pad(raw)
+    iv = Random.new().read(AES.block_size)
+    cipher = AES.new(private_key, AES.MODE_CBC, iv)
+    return base64.b64encode(iv + cipher.encrypt(raw.encode("utf-8")))
+
+
+def decrypt(enc, password):
+    private_key = get_private_key(password)
+    enc = base64.b64decode(enc)
+    iv = enc[:16]
+    cipher = AES.new(private_key, AES.MODE_CBC, iv)
+    return unpad(cipher.decrypt(enc[16:]))
 
 
 def redirect(url, status=301):
@@ -41,13 +72,11 @@ def close_connection(exception):
 
 
 def init_db():
-    print("stawiam baze")
     with app.app_context():
         db = get_db()
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
-    print("baza postawiona")
 
 
 def query_db(query, args=(), one=False):
@@ -69,7 +98,8 @@ def register():
         return render_template('registration.html')
 
     if request.method == 'POST':
-        hash_pw = werkzeug.security.generate_password_hash(password=request.form['password'], method='pbkdf2:sha256:200000')
+        hash_pw = werkzeug.security.generate_password_hash(password=request.form['password'],
+                                                           method='pbkdf2:sha256:200000')
         try:
             with sqlite3.connect("database.db") as con:
                 cur = con.cursor()
@@ -118,9 +148,24 @@ def login():
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
+    print('sesja:')
     print(session)
+    if request.method == 'GET':
+        g.db = sqlite3.connect('database.db')
+        cur = g.db.execute('SELECT * FROM sites WHERE user = ?', [session['user']])
+        sites = cur.fetchone()
+        if sites is not None:
+            cur = g.db.execute('SELECT * FROM sites WHERE user = ?', [session['user']])
+            sites = [dict(id=row[0], site=row[2], password=row[3]) for row in cur.fetchall()]
+            print('zapisane strony:')
+            print(sites)
+        else:
+            print('brak zapisanych stron')
 
-    return render_template('dashboard.html')
+        return render_template('dashboard.html', sites=sites)
+    else:
+        flash("Wystąpił błąd - niewłaściwy typ żądania")
+        return redirect(url_for(welcome))
 
 
 @app.route('/dashboard/site', methods=['POST'])
@@ -133,10 +178,28 @@ def dashboard_site():
         print(site)
         if site is None:
             try:
-                print('dodaje witryne')
+
+                # First let us encrypt secret message
+                encrypted = encrypt(request.form['password'], session['masterPassword'])
+                print(encrypted)
+
+                # Let us decrypt using our original password
+                decrypted = decrypt(encrypted, session['masterPassword'])
+                print(bytes.decode(decrypted))
+                print('donedonedonedonedonedonedonedonedonedone')
+
+                # print('dodaje witryne - hasło:')
+                # print(request.form['password'])
+                # print('zakodowane hasło:')
+                # encrypted_password = encrypt(request.form['password'], session['masterPassword'])
+                # print(encrypted_password)
+                # print('===== zdekodowane hasło: =====')
+                # print(bytes.decode(decrypt(encrypted_password, session['masterPassword'])))
+
                 with sqlite3.connect("database.db") as con:
                     cur = con.cursor()
-                    cur.execute("INSERT INTO sites (user, site) VALUES (?,?)", [session['user'], request.form['site']])
+                    cur.execute("INSERT INTO sites (user, site, password) VALUES (?,?,?)",
+                                [session['user'], request.form['site'], encrypted])
                     con.commit()
                     flash('Dodano witrynę!')
             except:
@@ -146,8 +209,41 @@ def dashboard_site():
                 return redirect(url_for('dashboard'))
             finally:
                 con.close()
+                print('finally')
         else:
             flash('Posiadasz już zapisane hasło do tej witryny!')
+        return redirect(url_for('dashboard'))
+
+
+@app.route('/dashboard/site/<site_id>', methods=['GET'])
+def dashboard_site_reveal(site_id):
+    if request.method == 'GET':
+        if session['user'] is not None and session['masterPassword'] is not None:
+            g.db = sqlite3.connect('database.db')
+            cur = g.db.execute('select * from sites where id = ? AND user = ?',
+                               [site_id, session['user']])
+            site = cur.fetchone()
+            print('strona do zdekodowania:')
+            print(site[3])
+            decrypted = decrypt(site[3], session['masterPassword'])
+            print(decrypted)
+            return jsonify(bytes.decode(decrypted))
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/dashboard/master-password-set', methods=['POST'])
+def dashboard_master_password_set():
+    if request.method == 'POST':
+        session['masterPassword'] = request.form['masterPassword']
+        print('Twoje hasło odszyfrowujące zostało ustawione.')
+        flash('Twoje hasło odszyfrowujące zostało ustawione.')
+        return redirect(url_for('dashboard'))
+
+
+@app.route('/dashboard/master-password-flush', methods=['POST'])
+def dashboard_master_password_flush():
+    if request.method == 'POST':
+        session.pop('masterPassword')
         return redirect(url_for('dashboard'))
 
 

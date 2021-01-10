@@ -5,6 +5,7 @@ Flask-Session
 itsdangerous
 Jinja2
 MarkupSafe
+pycryptodome
 pyopenssl
 redis
 Werkzeug
