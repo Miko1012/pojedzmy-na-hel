@@ -5,6 +5,16 @@
         <title>{% block title %}{% endblock %} - Pojedźmy na Hel!</title>
         {% block head_stuff %}{% endblock %}
     </head>
+<nav>
+    <a href={{ url_for('welcome') }}>Start</a>
+    {% if session['user'] %}
+        Witaj {{ session['user'] }}!
+        <a href={{ url_for('logout') }}>Wyloguj się</a>
+    {% else %}
+        <a href={{ url_for('register') }}>Zarejestruj się</a>
+        <a href={{ url_for('login') }}>Zaloguj się</a>
+    {% endif %}
+</nav>
 <body>
     {% block content %}{% endblock %}
 </body>

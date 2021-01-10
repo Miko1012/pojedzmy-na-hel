@@ -1,9 +1,22 @@
-import datetime
 import json
+import redis
 import sqlite3
-from flask import Flask, g, render_template, request, flash, make_response, url_for
+import werkzeug
+from flask import Flask, g, render_template, request, flash, make_response, url_for, session
+from flask_redis import FlaskRedis
+from flask_session import Session
+from os import getenv
+
 
 app = Flask(__name__)
+
+app.config.from_object(__name__)
+app.secret_key = getenv('SECRET_KEY')
+app.config['SECRET_KEY'] = getenv('SECRET_KEY')
+app.config['SESSION_TYPE'] = 'filesystem'
+# redis_client = FlaskRedis(app)
+# app.config['SESSION_REDIS'] = redis_client
+Session(app)
 DATABASE = 'database.db'
 
 
@@ -46,6 +59,7 @@ def query_db(query, args=(), one=False):
 
 @app.route('/')
 def welcome():
+    print(session)
     return render_template('welcome.html')
 
 
@@ -55,13 +69,11 @@ def register():
         return render_template('registration.html')
 
     if request.method == 'POST':
-        login = request.form['login']
-        password = request.form['password']
-
+        hash_pw = werkzeug.security.generate_password_hash(password=request.form['password'], method='pbkdf2:sha256:200000')
         try:
             with sqlite3.connect("database.db") as con:
                 cur = con.cursor()
-                cur.execute("INSERT INTO users (login, password) VALUES (?,?)", (login, password))
+                cur.execute("INSERT INTO users (login, password) VALUES (?,?)", (request.form['login'], hash_pw))
                 con.commit()
         except:
             con.rollback()
@@ -70,7 +82,7 @@ def register():
         finally:
             con.close()
 
-        return redirect(url_for(login))
+        return redirect(url_for('login'))
 
     else:
         flash("Wystąpił bład - niewłaściwy typ żądania")
@@ -83,34 +95,40 @@ def login():
         return render_template('login.html')
 
     if request.method == 'POST':
-        # login = request.form['login']
-        # password = request.form['password']
-
-        # con = sqlite3.connect("database.db")
-        # con.row_factory = sqlite3.Row
-        #
-        # cur = con.cursor()
-        # cur.execute("SELECT * FROM users WHERE users.login = (?)", request.form['login'])
-        #
-        # rows = cur.fetchall()
-
-        # rows = query_db("select * from users where users.login = (?)", login)
-        # print(rows)
-
-        # print(rows)
         g.db = sqlite3.connect('database.db')
         cur = g.db.execute('select * from users where login = ?', [request.form['login']])
         user = cur.fetchone()
         # user = dict(login=row[0], password=row[1]) for row in cur.fetchall()
-        print(user[0])
+        if user is not None:
+            print(user)
+            print('weryfikacja hasla:')
+            print(werkzeug.security.check_password_hash(user[1], request.form['password']))
+            if werkzeug.security.check_password_hash(user[1], request.form['password']):
+                print(app.secret_key)
+                session['user'] = user[0]
+                return redirect(url_for('dashboard'))
 
-        return json.dumps(user)
+        flash('Niewłaściwe dane logowania.')
+        return redirect(url_for('login'))
 
     else:
         flash("Wystąpił bład - niewłaściwy typ żądania")
         return redirect(url_for(welcome))
 
 
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    print(session)
+    return render_template('dashboard.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user')
+    flash("Wylogowano pomyślnie.")
+    return redirect(url_for('welcome'))
+
+
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', ssl_context='adhoc')
+    app.run(host='127.0.0.1', ssl_context='adhoc')

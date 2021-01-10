@@ -1,7 +1,10 @@
 click
+flask-redis
 Flask
+Flask-Session
 itsdangerous
 Jinja2
 MarkupSafe
 pyopenssl
+redis
 Werkzeug
