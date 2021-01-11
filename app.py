@@ -148,17 +148,13 @@ def login():
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    print('sesja:')
-    print(session)
     if request.method == 'GET':
         g.db = sqlite3.connect('database.db')
         cur = g.db.execute('SELECT * FROM sites WHERE user = ?', [session['user']])
         sites = cur.fetchone()
         if sites is not None:
             cur = g.db.execute('SELECT * FROM sites WHERE user = ?', [session['user']])
-            sites = [dict(id=row[0], site=row[2], password=row[3]) for row in cur.fetchall()]
-            print('zapisane strony:')
-            print(sites)
+            sites = [dict(id=row[0], site=row[2], password='***** ***') for row in cur.fetchall()]
         else:
             print('brak zapisanych stron')
 
@@ -174,28 +170,9 @@ def dashboard_site():
         g.db = sqlite3.connect('database.db')
         cur = g.db.execute('select * from sites where site = ? AND user = ?', [request.form['site'], session['user']])
         site = cur.fetchone()
-        print(session['user'])
-        print(site)
         if site is None:
             try:
-
-                # First let us encrypt secret message
                 encrypted = encrypt(request.form['password'], session['masterPassword'])
-                print(encrypted)
-
-                # Let us decrypt using our original password
-                decrypted = decrypt(encrypted, session['masterPassword'])
-                print(bytes.decode(decrypted))
-                print('donedonedonedonedonedonedonedonedonedone')
-
-                # print('dodaje witryne - hasło:')
-                # print(request.form['password'])
-                # print('zakodowane hasło:')
-                # encrypted_password = encrypt(request.form['password'], session['masterPassword'])
-                # print(encrypted_password)
-                # print('===== zdekodowane hasło: =====')
-                # print(bytes.decode(decrypt(encrypted_password, session['masterPassword'])))
-
                 with sqlite3.connect("database.db") as con:
                     cur = con.cursor()
                     cur.execute("INSERT INTO sites (user, site, password) VALUES (?,?,?)",
@@ -203,13 +180,11 @@ def dashboard_site():
                     con.commit()
                     flash('Dodano witrynę!')
             except:
-                print('cos poszlo nie tak')
                 con.rollback()
                 flash("Wystąpił błąd z połączeniem z bazą danych.")
                 return redirect(url_for('dashboard'))
             finally:
                 con.close()
-                print('finally')
         else:
             flash('Posiadasz już zapisane hasło do tej witryny!')
         return redirect(url_for('dashboard'))
@@ -223,10 +198,7 @@ def dashboard_site_reveal(site_id):
             cur = g.db.execute('select * from sites where id = ? AND user = ?',
                                [site_id, session['user']])
             site = cur.fetchone()
-            print('strona do zdekodowania:')
-            print(site[3])
             decrypted = decrypt(site[3], session['masterPassword'])
-            print(decrypted)
             return jsonify(bytes.decode(decrypted))
     return redirect(url_for('dashboard'))
 

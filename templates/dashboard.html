@@ -18,15 +18,13 @@ Twoje dane logowań do witryn:
         {% for site in sites %}
         <tr>
             <td>{{ site.site }}</td>
-            <td>{{ site.password }}</td>
+            <td id="passphrase-{{ site.id }}">{{ site.password }}</td>
             <td>
                 {% if session['masterPassword'] %}
                     {% set link = url_for('dashboard_site_reveal', site_id=site.id) %}
-                    {{ link }}
                     <a id="decrypt-{{ site.id }}" title="Odkryj hasło do serwisu"
-                    href="#" onclick="revealPassword('{{ link }}');return false;">Odszyfruj</a>
+                    href="#" onclick="revealPassword('{{ link }}', '{{ site.id }}');return false;">Odszyfruj</a>
                 {% endif %}
-{#                <a href="">Skopiuj</a>#}
             </td>
         </tr>
         {% endfor %}

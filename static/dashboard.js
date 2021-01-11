@@ -1,9 +1,15 @@
-const revealPassword = async(url) => {
+const revealPassword = async(url, id) => {
     console.log("wysyłam zapytanie i rozkodowuję hasło");
-    console.log(url);
-    const response = await fetch(url);
-    console.log(response);
-    if(response.status === 200) {
-        console.log(response.json());
-    }
+    await fetch(url)
+        .then((r) => {
+            if(r.status === 200) {
+                return r.json();
+            }
+        })
+        .then((a) => {
+            let td = document.getElementById('passphrase-' + id);
+            td.textContent = a.toString();
+            let button = document.getElementById('decrypt-' + id);
+            button.style.display = "none";
+        });
 };
