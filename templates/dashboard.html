@@ -1,51 +1,69 @@
 {% extends "base.html" %}
 {% block title %}
-Pulpit
+    Pulpit
 {% endblock %}
 {% block head_stuff %}
-    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 {% endblock %}
 {% block content %}
-Twoje dane logowań do witryn:
-    <table>
-        <tr>
-            <th>Witryna</th>
-            <th>Hasło</th>
-            {% if session['masterPassword'] %}
-                <th>Akcje</th>
-            {% endif %}
-        </tr>
-        {% for site in sites %}
-        <tr>
-            <td>{{ site.site }}</td>
-            <td id="passphrase-{{ site.id }}">{{ site.password }}</td>
-            <td>
-                {% if session['masterPassword'] %}
-                    {% set link = url_for('dashboard_site_reveal', site_id=site.id) %}
-                    <a id="decrypt-{{ site.id }}" title="Odkryj hasło do serwisu"
-                    href="#" onclick="revealPassword('{{ link }}', '{{ site.id }}');return false;">Odszyfruj</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div class="dashboard-upper">
+        <div>
+            <h1>Kokpit</h1>
+        </div>
+        <div class="passwords">
+            Twoje dane logowań do witryn:
+            <table>
+                <tr>
+                    <th>Witryna</th>
+                    <th>Hasło</th>
+                    {% if session['masterPassword'] %}
+                        <th>Akcje</th>
+                    {% endif %}
+                </tr>
+                {% for site in sites %}
+                    <tr>
+                        <td>{{ site.site }}</td>
+                        <td id="passphrase-{{ site.id }}">{{ site.password }}</td>
+                        <td>
+                            {% if session['masterPassword'] %}
+                                {% set link = url_for('dashboard_site_reveal', site_id=site.id) %}
+                                <a id="decrypt-{{ site.id }}" title="Odkryj hasło do serwisu"
+                                   href="#" onclick="revealPassword('{{ link }}', '{{ site.id }}');return false;">Odszyfruj</a>
+                                <a id="copy-{{ site.id }}" href="#" title="Skopiuj hasło do schowka"
+                                   onclick="copyPassword('{{ site.id }}');return false;">Skopiuj</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div class="dashboard-lower">
+
     {% if session['masterPassword'] %}
+        Dodaj kolejną witrynę:
+<form method="post" action={{ url_for('dashboard_site') }}>
+        <label for="site">Witryna</label>
+        <input type="text" id="site" name="site">
+        <label for="password">Hasło</label>
+        <input type="password" name="password" id="password">
+        <input type="submit" value="+">
+    </form>
         Twoje hasło odszyfrowujące jest ustawione.
         <form action="{{ url_for('dashboard_master_password_flush') }}" method="post">
             <input type="submit" value="Wyczyść hasło odszyfrowujące">
         </form>
     {% else %}
         <form action="{{ url_for('dashboard_master_password_set') }}" method="post">
-            <label for="masterPassword">Ustaw swoje hasło deszyfrujące, żeby móc odszyfrować hasła:</label>
+            <label for="masterPassword">Wpisz swoje hasło deszyfrujące, żeby móc odszyfrować hasła i dodawać witryny:</label>
             <input type="password" id="masterPassword" name="masterPassword">
             <input type="submit" value="Ustaw">
         </form>
     {% endif %}
-    <form method="post" action={{ url_for('dashboard_site') }}>
-        <label for="site">Witryna</label>
-        <input type="text" id="site" name="site">
-        <label for="password">Hasło</label>
-        <input type="password" name="password" id="password">
-        <input type="submit" value="Dodaj witrynę">
-    </form>
+    </div>
+
+
+
+
 {% endblock %}

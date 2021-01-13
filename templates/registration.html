@@ -3,16 +3,69 @@
 Rejestracja
 {% endblock %}
 {% block head_stuff %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='registration.css') }}">
 {% endblock %}
 {% block content %}
-<form method="post">
-        <label for="login">Login</label>
-        <input type="text" id="login" name="login">
-        <label for="password">Hasło</label>
-        <input type="password" id="password" name="password">
-        <label for="passwordRepeated">Powtórz hasło</label>
-        <input type="password" id="passwordRepeated">
-        <input type="submit" id="button" value="Zarejestruj">
-    </form>
+    <div class="register-page">
+        <h1>Zarejestruj konto</h1>
+        <form method="post" action="{{ url_for('register') }}">
+            {{ form.csrf_token }}
+            <div class="form-field">
+                {{ form.login.label }}
+                {{ form.login }}
+            </div>
+            <div class="form-field">
+                {{ form.email.label }}
+                {{ form.email }}
+            </div>
+            <div class="form-field">
+                {{ form.password.label }}
+                {{ form.password }}
+            </div>
+            <div class="form-field">
+                {{ form.password_repeat.label }}
+                {{ form.password_repeat }}
+            </div>
+            {{ form.submit }}
+            <div class="errors">
+                {% if form.login.errors %}
+                {% for error in form.login.errors %}
+                    <span class="error">
+                    {{ error }}
+                    </span>
+                {% endfor %}
+                {% endif %}
+                {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                    <span class="error">
+                    {{ error }}
+                    </span>
+                {% endfor %}
+                {% endif %}
+                {% if form.password.errors %}
+                {% for error in form.password.errors %}
+                    <span class="error">
+                    {{ error }}
+                    </span>
+                {% endfor %}
+                {% endif %}
+                {% if form.password_repeat.errors %}
+                {% for error in form.password_repeat.errors %}
+                    <span class="error">
+                    {{ error }}
+                    </span>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </form>
+    </div>
+{#<form method="post">#}
+{#        <label for="login">Login</label>#}
+{#        <input type="text" id="login" name="login">#}
+{#        <label for="password">Hasło</label>#}
+{#        <input type="password" id="password" name="password">#}
+{#        <label for="passwordRepeated">Powtórz hasło</label>#}
+{#        <input type="password" id="passwordRepeated">#}
+{#        <input type="submit" id="button" value="Zarejestruj">#}
+{#    </form>#}
 {% endblock %}

@@ -3,14 +3,45 @@
 Logowanie
 {% endblock %}
 {% block head_stuff %}
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 {% endblock %}
 {% block content %}
-    <form method="post">
-        <label for="login">Login</label>
-        <input type="text" id="login" name="login">
-        <label for="password">Hasło</label>
-        <input type="password" id="password" name="password">
-        <input type="submit" value="Zaloguj się">
-    </form>
+    <div class="login-page">
+    <h1>Zaloguj się</h1>
+        <form method="post" action="{{ url_for('login') }}">
+            {{ form.csrf_token }}
+            <div class="form-field">
+                {{ form.login.label }}
+                {{ form.login }}
+            </div>
+            <div class="form-field">
+                {{ form.password.label }}
+                {{ form.password }}
+            </div>
+            {{ form.submit }}
+            <div class="errors">
+                {% if form.login.errors %}
+                {% for error in form.login.errors %}
+                    <span class="error">
+                    {{ error }}
+                    </span>
+                {% endfor %}
+                {% endif %}
+                {% if form.password.errors %}
+                {% for error in form.password.errors %}
+                    <span class="error">
+                    {{ error }}
+                    </span>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </form>
+    </div>
+{#    <form method="post">#}
+{#        <label for="login">Login</label>#}
+{#        <input type="text" id="login" name="login">#}
+{#        <label for="password">Hasło</label>#}
+{#        <input type="password" id="password" name="password">#}
+{#        <input type="submit" value="Zaloguj się">#}
+{#    </form>#}
 {% endblock %}

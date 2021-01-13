@@ -1,0 +1,29 @@
+.dashboard-upper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+.dashboard-lower {
+    background-color: #A8DADC;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 0 1rem;
+    text-align: center;
+}
+h1 {
+    margin: 1rem;
+}
+input {
+    border: none;
+    font-size: 2rem;
+}
+.passwords {
+    padding: 1rem;
+    margin: 1rem;
+    background-color: #A8DADC;
+    border-radius: 0.5rem;
+}
+[id^=copy] {
+    display: none;
+}

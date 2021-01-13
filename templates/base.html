@@ -1,22 +1,40 @@
 <!doctype html>
-<html>
-    <head>
-        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        <title>{% block title %}{% endblock %} - Pojedźmy na Hel!</title>
-        {% block head_stuff %}{% endblock %}
-    </head>
+<html lang="pl">
+<head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <script src="{{ url_for('static', filename='js/flashes.js')}}"></script>
+    <title>{% block title %}{% endblock %} - Pojedźmy na Hel!</title>
+    {% block head_stuff %}{% endblock %}
+</head>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class=flashes>
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}" id="flash-{{ loop.index }}">
+                    {{ message }}
+                    <a onclick="hideFlash('flash-{{ loop.index }}')" class="flash-hide-button">
+                        ✕
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 <nav>
-    <a href={{ url_for('welcome') }}>Start</a>
+    <a href="{{ url_for('welcome') }}" class="primary-btn mr-auto">Start</a>
     {% if session['user'] %}
-        Witaj {{ session['user'] }}!
-        <a href={{ url_for('dashboard') }}>Kokpit</a>
-        <a href={{ url_for('logout') }}>Wyloguj się</a>
+        <a class="primary-btn">Witaj {{ session['user'] }}!</a>
+        <a href="{{ url_for('dashboard') }}" class="primary-btn">Kokpit</a>
+        <a href="{{ url_for('logout') }}" class="primary-btn">Wyloguj się</a>
     {% else %}
-        <a href={{ url_for('register') }}>Zarejestruj się</a>
-        <a href={{ url_for('login') }}>Zaloguj się</a>
+        <a href="{{ url_for('login') }}" class="primary-btn">Zaloguj się</a>
+        <a href="{{ url_for('register') }}" class="secondary-btn">Zarejestruj się</a>
     {% endif %}
 </nav>
 <body>
-    {% block content %}{% endblock %}
+{% block content %}{% endblock %}
 </body>
 </html>

@@ -2,6 +2,7 @@ click
 flask-redis
 Flask
 Flask-Session
+Flask-WTF
 itsdangerous
 Jinja2
 MarkupSafe
@@ -9,3 +10,6 @@ pycryptodome
 pyopenssl
 redis
 Werkzeug
+WTForms
+email_validator
+python-dotenv

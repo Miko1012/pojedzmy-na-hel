@@ -1,0 +1,59 @@
+html {
+    font-family: 'Roboto', sans-serif;
+    background-color: #F1FAEE;
+}
+body {
+    /*margin: 0;*/
+    color: #1D3557;
+    font-size: 2rem;
+}
+
+nav {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: row;
+}
+nav a {
+    font-size: 2rem;
+    padding: 0.3rem 0.5rem;
+    text-decoration: none;
+}
+.primary-btn {
+    color: #1D3557;
+    margin-right: 1rem;
+}
+.secondary-btn {
+    background-color: #E63946;
+    border-radius: 1.1rem;
+    color: #F1FAEE;
+}
+.mr-auto {
+    margin-right: auto;
+}
+.flashes {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+.flash {
+    padding: 1rem;
+    margin: 1rem;
+
+    color: #EFF9F0;
+    font-size: 1.5rem;
+}
+
+.flash-success {
+    background-color: #669D31;
+}
+.flash-error {
+    background-color: #88292F;
+}
+.flash-hide-button {
+    padding-left: 2rem;
+}
+.flash-hide-button:hover {
+    cursor: pointer;
+}
