@@ -89,7 +89,6 @@ def init_db():
 
 @app.route('/')
 def welcome():
-    print(session)
     return render_template('welcome.html')
 
 
@@ -119,7 +118,6 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print(session)
     if session.get('login_tries') is None:
         session['login_tries'] = 0
 
