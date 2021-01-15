@@ -12,7 +12,8 @@
             <h1>Kokpit</h1>
         </div>
         <div class="passwords">
-            Twoje dane logowań do witryn:
+            {% if sites != [] %}
+                Twoje dane logowań do witryn:
             <table>
                 <tr>
                     <th>Witryna</th>
@@ -37,6 +38,9 @@
                     </tr>
                 {% endfor %}
             </table>
+                {% else %}
+                Nie zapisałeś jeszcze żadnej witryny
+            {% endif %}
         </div>
     </div>
     <div class="dashboard-lower">
@@ -48,17 +52,20 @@
         <input type="text" id="site" name="site">
         <label for="password">Hasło</label>
         <input type="password" name="password" id="password">
-        <input type="submit" value="+">
+        <input type="submit" value="+" class="submit-website">
     </form>
-        Twoje hasło odszyfrowujące jest ustawione.
+        <div>Silne hasło powinno zawierać małe i duże litery, cyfry oraz znaki specjalne.</div>
+            <div>Siła hasła (w skali od 1 do 4):
+            <span id="strength">Zacznij wpisywać hasło aby zobaczyć ocenę</span></div>
+        <div class="mt">Twoje hasło odszyfrowujące jest ustawione.</div>
         <form action="{{ url_for('dashboard_master_password_flush') }}" method="post">
-            <input type="submit" value="Wyczyść hasło odszyfrowujące">
+            <input type="submit" value="Wyczyść hasło odszyfrowujące" class="submit-website">
         </form>
     {% else %}
         <form action="{{ url_for('dashboard_master_password_set') }}" method="post">
             <label for="masterPassword">Wpisz swoje hasło deszyfrujące, żeby móc odszyfrować hasła i dodawać witryny:</label>
             <input type="password" id="masterPassword" name="masterPassword">
-            <input type="submit" value="Ustaw">
+            <input type="submit" class="submit-website" value="Ustaw">
         </form>
     {% endif %}
     </div>

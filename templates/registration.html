@@ -4,6 +4,7 @@ Rejestracja
 {% endblock %}
 {% block head_stuff %}
 <link rel="stylesheet" href="{{ url_for('static', filename='registration.css') }}">
+    <script src="{{ url_for('static', filename='js/register.js') }}"></script>
 {% endblock %}
 {% block content %}
     <div class="register-page">
@@ -22,6 +23,9 @@ Rejestracja
                 {{ form.password.label }}
                 {{ form.password }}
             </div>
+            <div>Silne hasło powinno zawierać małe i duże litery, cyfry oraz znaki specjalne.</div>
+            <div>Siła hasła (w skali od 1 do 4):
+            <span id="strength"></span></div>
             <div class="form-field">
                 {{ form.password_repeat.label }}
                 {{ form.password_repeat }}
@@ -59,13 +63,4 @@ Rejestracja
             </div>
         </form>
     </div>
-{#<form method="post">#}
-{#        <label for="login">Login</label>#}
-{#        <input type="text" id="login" name="login">#}
-{#        <label for="password">Hasło</label>#}
-{#        <input type="password" id="password" name="password">#}
-{#        <label for="passwordRepeated">Powtórz hasło</label>#}
-{#        <input type="password" id="passwordRepeated">#}
-{#        <input type="submit" id="button" value="Zarejestruj">#}
-{#    </form>#}
 {% endblock %}

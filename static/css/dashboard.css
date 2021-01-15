@@ -27,3 +27,12 @@ input {
 [id^=copy] {
     display: none;
 }
+.submit-website {
+    background-color: #1D3557;
+    color: #F1FAEE;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.5rem;
+}
+.mt {
+    margin-top: 2rem;
+}
