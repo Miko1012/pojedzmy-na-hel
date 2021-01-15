@@ -13,4 +13,3 @@ Werkzeug
 WTForms
 email_validator
 python-dotenv
-OpenSSL

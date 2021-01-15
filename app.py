@@ -20,7 +20,7 @@ app.config.from_object(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SECURE'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = 30
+app.config['PERMANENT_SESSION_LIFETIME'] = 900
 Session(app)
 DATABASE = 'database.db'
 
