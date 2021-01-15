@@ -1,2 +1,4 @@
 .env
 database.db
+private.key
+certificate.crt
