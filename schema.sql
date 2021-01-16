@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS sites (
     user TEXT NOT NULL,
     site TEXT NOT NULL,
     password TEXT NOT NULL,
+    salt TEXT NOT NULL,
     FOREIGN KEY(user) REFERENCES users(login)
 )

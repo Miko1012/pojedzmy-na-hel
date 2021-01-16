@@ -30,23 +30,22 @@ pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s)
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
 
-def get_private_key(password):
-    salt = b"this is a salt"
+def get_private_key(password, salt):
     kdf = PBKDF2(password, salt, 64, 1000)
     key = kdf[:32]
     return key
 
 
-def encrypt(raw, password):
-    private_key = get_private_key(password)
+def encrypt(raw, password, salt):
+    private_key = get_private_key(password, salt)
     raw = pad(raw)
     iv = Random.new().read(AES.block_size)
     cipher = AES.new(private_key, AES.MODE_CBC, iv)
     return base64.b64encode(iv + cipher.encrypt(raw.encode("utf-8")))
 
 
-def decrypt(enc, password):
-    private_key = get_private_key(password)
+def decrypt(enc, password, salt):
+    private_key = get_private_key(password, salt)
     enc = base64.b64decode(enc)
     iv = enc[:16]
     cipher = AES.new(private_key, AES.MODE_CBC, iv)
@@ -85,6 +84,12 @@ def init_db():
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
+
+
+@app.after_request
+def modify_header_security(res):
+    res.headers['Server'] = 'server.company.com'
+    return res
 
 
 @app.route('/')
@@ -173,11 +178,12 @@ def dashboard_site():
     site = cur.fetchone()
     if site is None:
         try:
-            encrypted = encrypt(request.form['password'], session['masterPassword'])
+            salt = os.urandom(8)
+            encrypted = encrypt(request.form['password'], session['masterPassword'], salt)
             with sqlite3.connect("database.db") as con:
                 cur = con.cursor()
-                cur.execute("INSERT INTO sites (user, site, password) VALUES (?,?,?)",
-                            [session['user'], request.form['site'], encrypted])
+                cur.execute("INSERT INTO sites (user, site, password, salt) VALUES (?,?,?,?)",
+                            [session['user'], request.form['site'], encrypted, salt])
                 con.commit()
                 flash('Dodano witrynę!', 'success')
         except:
@@ -200,7 +206,7 @@ def dashboard_site_reveal(site_id):
         cur = g.db.execute('select * from sites where id = ? AND user = ?',
                            [site_id, session['user']])
         site = cur.fetchone()
-        decrypted = decrypt(site[3], session['masterPassword'])
+        decrypted = decrypt(site[3], session['masterPassword'], site[4])
         return jsonify(bytes.decode(decrypted))
     else:
         flash('Niepoprawne dane autoryzacyjne.', 'error')
